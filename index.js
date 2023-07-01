@@ -97,10 +97,14 @@ async function makeVacationLabel(auth) {
 
   const labels = JSON.parse(JSON.stringify((await listLabels).data.labels));
 
+  let labelID = "";
+
   if (labels.find((data) => data.name === "vacation")) {
     console.log("Label Exists!");
+    labelID = labels.find((data) => data.name === "vacation")["id"]
+    
   } else {
-    const req = gmail.users.labels.create({
+    const res = await gmail.users.labels.create({
       userId: "me",
       requestBody: {
         labelListVisibility: "labelShow",
@@ -108,9 +112,9 @@ async function makeVacationLabel(auth) {
         name: "vacation",
       },
     });
+    labelID = await res.data.id;
   }
-
-  return [auth, labels.find((data) => data.name === "vacation")["id"]];
+  return [auth, labelID];
 }
 /**
  * Get the number of messages in a thread
@@ -151,7 +155,6 @@ async function findNewEmails(chainData) {
     for(let thread of res.data.threads){
       if (await getMessageCount(auth, thread["id"]) === 1) {
         newSenders.push(thread["id"]);
-        console.log(newSenders)
       }
     };
   } catch (err) {
@@ -169,6 +172,7 @@ async function findNewEmails(chainData) {
 async function sendVacationReply(sendData) {
   const auth = sendData[0];
   const labelId = sendData[1];
+  // console.log(labelId)
   const newSenders = sendData[2];
   const gmail = google.gmail({ version: "v1", auth });
 
@@ -190,7 +194,7 @@ async function sendVacationReply(sendData) {
 
         // Store the Message-ID of a thread, to email address and subject name
         // Accorrding to docs, the Subject must be the same as the thread and 
-        // the In-Reply-To header must be set
+        // the In-Reply-To header must be seRt
         let inReplyTo = "";
         let toEmailAddress = "";
         let subject = "";
