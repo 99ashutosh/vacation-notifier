@@ -17,3 +17,9 @@ and then:
 ```
 node .
 ```
+
+## Technologies Used
+
+- `node` to run the application.
+- `google-cloud/local-auth` for `OAuth` authentication.
+- `googleapis` to interract with the GMail API
