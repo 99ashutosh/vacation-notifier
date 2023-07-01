@@ -3,6 +3,7 @@ const path = require("path");
 const process = require("process");
 const { authenticate } = require("@google-cloud/local-auth");
 const { google } = require("googleapis");
+
 // If modifying these scopes, delete token.json.
 const SCOPES = [
   "https://mail.google.com/",
@@ -81,6 +82,11 @@ async function authorize() {
   return client;
 }
 
+/**
+ * Check if the account has a "vacation" label, if not make one.
+ * @param {} auth 
+ * @returns 
+ */
 async function makeVacationLabel(auth) {
   const date_time = new Date();
   console.log("Fetch time: ", date_time);
@@ -119,8 +125,8 @@ async function getMessageCount(auth, threadid) {
       userId: "me",
       id: threadid,
     })
-    .then((data) => {
-      return data.data.messages.length;
+    .then((userThread) => {
+      return userThread.data.messages.length;
     });
 }
 
@@ -138,6 +144,7 @@ async function findNewEmails(chainData) {
     q: "is:unread",
   });
 
+  // List to store all the threads of first time senders
   let newSenders = [];
 
   try {
@@ -181,6 +188,9 @@ async function sendVacationReply(sendData) {
           JSON.stringify(messageFromThread.data.messages[0].payload.headers)
         );
 
+        // Store the Message-ID of a thread, to email address and subject name
+        // Accorrding to docs, the Subject must be the same as the thread and 
+        // the In-Reply-To header must be set
         let inReplyTo = "";
         let toEmailAddress = "";
         let subject = "";
@@ -206,11 +216,12 @@ async function sendVacationReply(sendData) {
           "MIME-Version: 1.0",
           `Subject: ${utf8Subject}`,
           "",
-          "On Vacation!  😎",
+          "On Vacation! 😎",
         ];
 
         const message = messageParts.join("\n");
 
+        // For API, convert to Base64
         const raw = Buffer.from(message)
           .toString("base64")
           .replace(/\+/g, "-")
@@ -223,6 +234,7 @@ async function sendVacationReply(sendData) {
           requestBody: { raw: raw, threadId: id },
         });
 
+        // Once Reply is senb mark as read and add the vacation label
         const fixRead = gmail.users.threads
           .modify({
             userId: "me",
