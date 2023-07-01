@@ -1,0 +1,19 @@
+{
+  "name": "gmail-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
+    "googleapis": "^105.0.0",
+    "http-server": "^14.1.1",
+    "moment": "^2.29.4",
+    "nodemailer": "^6.9.3"
+  }
+}
